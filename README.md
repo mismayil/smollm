@@ -83,3 +83,71 @@ messages = [
 - [SmolTalk](https://huggingface.co/datasets/HuggingFaceTB/smoltalk) - Our instruction-tuning dataset
 - [FineMath](https://huggingface.co/datasets/HuggingFaceTB/finemath) - Mathematics pretraining dataset
 - [FineWeb-Edu](https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu) - Educational content pretraining dataset
+
+---
+
+## EE-628: Getting Started
+
+Quick step-by-step guide on how to pretrain models (assuming you are working on `$HOME`).
+1. Clone this repo on RCP.
+   ```
+   git clone git@github.com:AleHD/smollm.git
+   ```
+1. Clone nanotron
+   ```
+   git clone git@github.com:AleHD/nanotron.git
+   ```
+1. Launch the job
+   ```
+   runai submit-dist pytorch \
+   	--name nanotron \
+   	--image registry.rcp.epfl.ch/<your_username>/ee628 \
+   	--workers 1 \
+   	--node-pool h200 \
+   	--gpu 8 \
+   	--backoff-limit 1 \
+   	--large-shm \
+   	--environment HF_TOKEN=... \
+   	--environment WANDB_API_KEY=... \
+	--environment SUBMIT_TIME=$(date '+%Y-%m-%d_%H:%M:%S') \
+   	--existing-pvc claimname=course-ee-628-scratch,path=/scratch \
+   	--existing-pvc claimname=home,path=/home \
+   	--annotation k8s.v1.cni.cncf.io/networks=kube-system/roce \
+   	--extended-resource rdma/rdma=1 \
+   	--command -- bash -c "cd && bash smollm/text/pretraining/entrypoint.sh"
+   ```
+   You can also run `pretraining/entrypoint.sh` directly in an interactive node if you don't wish to do multi-job training.
+   Note that the total node count is the amount of workers+1 (the master node), so the above example runs in two nodes.
+   You can also use the following submission command as an example for non-interactive single job training:
+   ```
+   runai submit \
+	--name nanotron \
+	--image registry.rcp.epfl.ch/alhernan/ee628 \
+	--node-pool h200 \
+	--gpu 8 \
+	--large-shm \
+	--environment HF_TOKEN=... \
+	--environment WANDB_API_KEY=... \
+	--environment SUBMIT_TIME=$(date '+%Y-%m-%d_%H:%M:%S') \
+	--existing-pvc claimname=course-ee-628-scratch,path=/scratch \
+	--existing-pvc claimname=home,path=/home \
+	--command -- bash -c "cd && bash smollm/text/pretraining/entrypoint.sh"
+   ```
+   It is recommended to pass the `SUBMIT_TIME` as specified so the logfiles are more easy to manage.
+
+## EE-628: Extending the Pretraining Effort
+
+In this section I will give general guidelines on the workings of `entrypoint.sh` and how to extend to your particular needs.
+The `entrypoint.sh` serves as a generic training function that will automatically handle single or multi-job training and a flexible number of nanotron configuration files.
+This makes it (relatively) easy to extend the script with experimental features.
+The script does the following:
+1. It has a number of environment variables to customize the general behaviour (e.g. change `NANOTRON_DIR` if your experimental feature is being developed on a separate nanotron branch).
+1. In the prelude, it creates the `TORCHRUN_ARGS` to be used depending on the number of nodes and GPUs availabel.
+1. Then, it runs `text/pretraining/unify_config.py` to use the base configuration file in `BASE_CONFIG`, and add the configuration from a number of different files `NEW_CONFIGS`.
+   Currently, the used `BASE_CONFIG` sets up the general configurations that most training runs will share (fixed random seed, clip gradient value, sequence lenght, etc).
+   The two new configurations currently specified (`arch_smollm2_135M.yaml` and `data_slimpajama.yaml`) provide the arguments needed to specify the SmolLM2 architecture and the use of SlimPajama6BT dataset.
+   If you want to experiment with a new architecture, you might create your own `arch_custom.yaml` and use that path instead of the current default `arch_smollm2_135M.yaml` for instance.
+   If you want to experiment with a new optimizer, you can create a new file `opt_scion.yaml` and add that path to the list.
+   Lastly, the `OVERRIDE_CONFIG_KEYS` serves in case you want to make minor changes to the final unified configuration file.
+   For instance, to set a custom run name (as in the current example) or other small configuration changes that don't necessarily need a file of their own.
+1. It runs the training command, and saves the stdout and stderr to the log files in the directory `LOG_ROOT/run_${SUBMIT_TIME}_$JOB_UUID` so you can access the logs even after the job gets deleted.

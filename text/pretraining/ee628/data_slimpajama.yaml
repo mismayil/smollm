@@ -1,0 +1,19 @@
+# This yaml contains the basic config to use 6BT slim pajama so we can start 
+# testing with a small dataset while we prepare the better data mixes.
+# It forces 5000 steps (100it warmup 900it cooldown) so the train run doesn't run out of tokens.
+
+data_stages:
+- data:
+    dataset:
+      hf_dataset_or_datasets: DKYoon/SlimPajama-6B
+    num_loading_workers: 0
+    seed: 8
+  name: stable phase
+  start_training_step: 1
+tokens:
+  train_steps: 5000
+optimizer:
+  learning_rate_scheduler:
+    lr_warmup_steps: 100
+    lr_decay_starting_step: 5100
+    lr_decay_steps: 900
