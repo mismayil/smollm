@@ -30,7 +30,6 @@ OVERRIDE_CONFIG_KEYS=(
 	optimizer/zero_stage:0
 	checkpoints/checkpoints_path:$CKPT_PATH
 	checkpoints/resume_checkpoint_path:$CKPT_PATH
-	checkpoints/checkpoint_interval:10
 )
 
 # Path where the directories with logfiles will be stored.
