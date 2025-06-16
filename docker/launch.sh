@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMAGE="registry.rcp.epfl.ch/ismayilz/ee628"
+IMAGE="registry.rcp.epfl.ch/nlp/ismayilz/ee628"
 COMMAND=$1
 CLUSTER=rcp-caas-prod
 N_GPUS=1
@@ -18,6 +18,7 @@ NODE_POOL="h200"
 DELETE_JOBS=0
 ENTRYPOINT_ARGS=""
 PREEMPTIBLE=0
+PROJECT="course-ee-628-ismayilz"
 shift 1
 
 while getopts m:l:c:g:ps:u:r:n:e:dq opt; do
@@ -109,6 +110,9 @@ fi
 
 echo "using cluster: $CLUSTER"
 runai config cluster $CLUSTER
+
+echo "using project: $PROJECT"
+runai config project $PROJECT
 
 if [ "$DELETE_JOBS" == 1 ]; then
 	echo "Deleting existing job $JOB_NAME"

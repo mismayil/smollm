@@ -1,3 +1,3 @@
 #!/bin/sh
 
-docker push registry.rcp.epfl.ch/ismayilz/ee628
+docker push registry.rcp.epfl.ch/nlp/ismayilz/ee628
