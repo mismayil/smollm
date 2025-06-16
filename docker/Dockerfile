@@ -101,4 +101,11 @@ RUN git config --global pull.rebase false
 USER ${LDAP_USERNAME}
 WORKDIR /scratch
 
+# Transfer scripts
+COPY --chown=${LDAP_USERNAME} ./entrypoint.sh .
+RUN chmod +x ./entrypoint.sh
+
+COPY --chown=${LDAP_USERNAME} ./startup.sh .
+RUN chmod +x ./startup.sh
+
 ENTRYPOINT ["/bin/bash"]
