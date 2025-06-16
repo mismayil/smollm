@@ -1,0 +1,22 @@
+# smollm text
+transformers
+trl>=0.15
+peft
+accelerate
+datasets
+wandb
+bitsandbytes
+
+# smollm text eval
+# lighteval[accelerate,extended_tasks,vllm] @ git+https://github.com/huggingface/lighteval@ea46419a93fb390e8f694f7c6c64c1e684487c9d
+lighteval[accelerate,extended_tasks,vllm]
+fsspec>=2024.3.0
+word2number
+
+# smol tools
+tkmacosx>=1.0.5
+pynput>=1.7.7
+llama-cpp-python>=0.3.1
+pyperclip>=1.9.0
+transformers>=4.46.2
+pygments>=2.18.0
