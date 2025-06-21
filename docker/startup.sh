@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NFS_HOME="/scratch/home/ismayilz"
+NFS_HOME="/scratch/users/ismayilz"
 HOME="/home/ismayilz"
 
 # symlink folders

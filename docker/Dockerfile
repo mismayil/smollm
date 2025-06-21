@@ -79,6 +79,15 @@ RUN if [ -f requirements.txt ]; then \
 # Set default shell to /bin/bash
 SHELL ["/bin/bash", "-cu"]
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssh-client \
+    openssh-server \
+    tmux \
+    vim \
+    sudo \
+    htop \
+    unzip
+
 ARG LDAP_USERNAME
 
 # Create local user and group
@@ -95,17 +104,16 @@ RUN --mount=type=secret,id=my_env source /run/secrets/my_env && \
     git config --global user.name ${GITHUB_NAME}
 RUN --mount=type=secret,id=my_env source /run/secrets/my_env && \
     git config --global user.email ${GITHUB_EMAIL}
-RUN git config --global pull.rebase false
+RUN git config --global pull.rebase false 
 
 # Switch to user context
 USER ${LDAP_USERNAME}
-WORKDIR /scratch
 
 # Transfer scripts
-COPY --chown=${LDAP_USERNAME} ./entrypoint.sh .
-RUN chmod +x ./entrypoint.sh
+COPY --chown=${LDAP_USERNAME} entrypoint.sh .
+RUN chmod +x entrypoint.sh
 
-COPY --chown=${LDAP_USERNAME} ./startup.sh .
-RUN chmod +x ./startup.sh
+COPY --chown=${LDAP_USERNAME} startup.sh .
+RUN chmod +x startup.sh
 
 ENTRYPOINT ["/bin/bash"]
